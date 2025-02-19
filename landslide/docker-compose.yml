@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .  # The root of the project
+      dockerfile: server/Dockerfile  # The Dockerfile for the backend
+    container_name: landslidecm-backend
+    ports:
+      - "5050:5050"  # Expose Flask backend on port 5050
+    networks:
+      - app-network
+    environment:
+      - FLASK_ENV=development
+      - FLASK_RUN_HOST=0.0.0.0  # To make Flask accessible from outside the container
+    volumes:
+      - ./server:/server  # Mount the server directory
+    depends_on:
+      - frontend  # Ensure frontend is ready before backend starts
+
+  frontend:
+    build:
+      context: .  # The root of the project
+      dockerfile: client/Dockerfile  # The Dockerfile for the frontend
+    container_name: landslidecm-frontend
+    ports:
+      - "3030:3030"  # Expose Next.js frontend on port 3030
+    networks:
+      - app-network
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5050/api  # API URL pointing to Flask backend
+    volumes:
+      - ./client:/client  # Mount the client directory
+
+networks:
+  app-network:
+    driver: bridge
